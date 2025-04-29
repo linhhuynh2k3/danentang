@@ -1,8 +1,8 @@
-import 'react-native-gesture-handler';
 import * as React from 'react';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import DemoTheme from './buoi3/DemoTheme';
 import HelloWorld from './Lab1/Project1'; // phải đúng với export default
 import Project2 from './Lab1/Project2';
@@ -14,6 +14,21 @@ import Project7 from './Lab1/Project7';
 import Project8 from './Lab1/Project8';
 import FormLogin from './buoi3/FormLogin';
 import Calculator from './Lab1/Calycurator';
+import { Provider } from 'react-redux';
+import store from './Lab2/store';
+import TabNavigator from './Lab2/routes';
+import Favorites from './Lab2/screens/Favorites';
+import User from './Lab2/screens/User';
+import Options from './Lab2/screens/Options';
+import Contacts from './Lab2/screens/Contacts';
+import Profile from './Lab2/screens/Profile';
+import Index from './buoi4/Index';
+import MyDrawer from './buoi4/MyDrawer';
+import { enableScreens, enableFreeze } from 'react-native-screens';
+
+enableScreens();
+enableFreeze(true);
+
 const App = () => {
   return (
     //<HelloWorld />
@@ -25,7 +40,14 @@ const App = () => {
     //<Project7 />
     //<Project8 />
     //<FormLogin />
-    <Calculator />
+    //<Calculator />
+    //<Provider store={store}>
+    // <TabNavigator />
+    // </Provider>
+    <Index />
+    /*<NavigationContainer>
+      <MyDrawer />
+    </NavigationContainer>*/
   );
 };
 
