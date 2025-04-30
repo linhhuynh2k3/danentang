@@ -1,7 +1,7 @@
-// utility/colors.js
 export default {
-    blue: '#4F6D7A',
-    gray: '#999',
-    grayLight: '#CCC',
-    grayDark: '#333',
+    blue: '#3498DB',
+    greyLight: '#f7f7f7',
+    grey: '#D8D8D8',
+    greyDark: '#BBBBBB',
+    black: '#000000'
 };

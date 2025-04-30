@@ -1,4 +1,3 @@
-// components/ContactListItem.js
 import React from 'react';
 import { StyleSheet, View, TouchableHighlight, Text, Image } from 'react-native';
 import PropTypes from 'prop-types';
@@ -12,7 +11,11 @@ const ContactListItem = ({ name, avatar, phone, onPress }) => {
             onPress={onPress}
         >
             <View style={styles.contactInfo}>
-                <Image style={styles.avatar} source={{ uri: avatar }} />
+                <Image
+                    style={styles.avatar}
+                    source={avatar ? { uri: avatar } : console.log(require('../assets/defaultavatar.png'))}
+                    defaultSource={require('../assets/defaultavatar.png')}
+                />
                 <View style={styles.details}>
                     <Text style={styles.title}>{name}</Text>
                     <Text style={styles.subtitle}>{phone}</Text>
@@ -21,18 +24,24 @@ const ContactListItem = ({ name, avatar, phone, onPress }) => {
         </TouchableHighlight>
     );
 };
-export default ContactListItem;
+
 ContactListItem.propTypes = {
-    name: PropTypes.string,
-    avatar: PropTypes.string,
-    phone: PropTypes.string,
-    onPress: PropTypes.func,
+    name: PropTypes.string.isRequired,
+    avatar: PropTypes.string.isRequired,
+    phone: PropTypes.string.isRequired,
+    onPress: PropTypes.func.isRequired,
 };
 
+ContactListItem.defaultProps = {
+    name: 'Unknown Name',
+    avatar: null, // Thay thế bằng URL khác
+    phone: 'Unknown Phone',
+    onPress: () => { },
+};
+
+export default ContactListItem;
+
 const styles = StyleSheet.create({
-    container: {
-        paddingLeft: 24,
-    },
     contactInfo: {
         flex: 1,
         flexDirection: 'row',
@@ -41,12 +50,12 @@ const styles = StyleSheet.create({
         paddingBottom: 16,
         paddingRight: 24,
         borderBottomColor: colors.grey,
-        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomWidth: StyleSheet.hairlineWidth
     },
     avatar: {
         borderRadius: 22,
         width: 44,
-        height: 44,
+        height: 44
     },
     details: {
         justifyContent: 'center',
@@ -64,4 +73,3 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
 });
-

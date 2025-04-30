@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, FlatList, Text, ActivityIndicator } from 'react-native';
-import { fetchContacts } from '../utility/api';
-import ContactThumbnail from '../components/ContactThumbnail';
-import { useDispatch, useSelector } from 'react-redux';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator } from 'react-native';
+import { fetchContacts } from '../../utility/api';
+import ContactThumbnail from '../ContactThumbnail';
+
 const keyExtractor = ({ phone }) => phone;
 
 const Favorites = ({ navigation }) => {
-    // State
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
 
-    // Load dữ liệu
     useEffect(() => {
         setLoading(true);
-        setError(false);
-
         fetchContacts()
-            .then((contacts) => {
+            .then(contacts => {
                 setContacts(contacts);
                 setLoading(false);
+                setError(false);
             })
-            .catch(() => {
+            .catch(e => {
                 setLoading(false);
                 setError(true);
             });
@@ -37,12 +34,12 @@ const Favorites = ({ navigation }) => {
         );
     };
 
-    const favorites = contacts.filter((contact) => contact.favorite);
+    const favorites = contacts.filter(contact => contact.favorite);
 
     return (
         <View style={styles.container}>
             {loading && <ActivityIndicator size="large" />}
-            {error && <Text>Error loading contacts...</Text>}
+            {error && <Text>Error...</Text>}
             {!loading && !error && (
                 <FlatList
                     data={favorites}

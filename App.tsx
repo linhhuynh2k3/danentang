@@ -15,19 +15,10 @@ import Project8 from './Lab1/Project8';
 import FormLogin from './buoi3/FormLogin';
 import Calculator from './Lab1/Calycurator';
 import { Provider } from 'react-redux';
-import store from './Lab2/store';
-import TabNavigator from './Lab2/routes';
-import Favorites from './Lab2/screens/Favorites';
-import User from './Lab2/screens/User';
-import Options from './Lab2/screens/Options';
-import Contacts from './Lab2/screens/Contacts';
-import Profile from './Lab2/screens/Profile';
 import Index from './buoi4/Index';
 import MyDrawer from './buoi4/MyDrawer';
 import { enableScreens, enableFreeze } from 'react-native-screens';
-
-enableScreens();
-enableFreeze(true);
+import TabNavigator from './Lab2/components/routers';
 
 const App = () => {
   return (
@@ -42,12 +33,13 @@ const App = () => {
     //<FormLogin />
     //<Calculator />
     //<Provider store={store}>
-    // <TabNavigator />
+    <TabNavigator />
     // </Provider>
-    <Index />
+    //<Index />
     /*<NavigationContainer>
       <MyDrawer />
     </NavigationContainer>*/
+
   );
 };
 
