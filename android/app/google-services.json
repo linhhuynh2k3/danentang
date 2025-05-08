@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "935699751317",
+    "project_id": "quanlinhatro-1f04a",
+    "storage_bucket": "quanlinhatro-1f04a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935699751317:android:b085812e526dce727a169c",
+        "android_client_info": {
+          "package_name": "com.demoreactnative"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz4DTUnILAAXP5FFHHK5T562wF06LqeXk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

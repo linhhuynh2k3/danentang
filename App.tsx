@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import DemoTheme from './buoi3/DemoTheme';
 import HelloWorld from './Lab1/Project1'; // phải đúng với export default
@@ -19,6 +18,7 @@ import Index from './buoi4/Index';
 import MyDrawer from './buoi4/MyDrawer';
 import { enableScreens, enableFreeze } from 'react-native-screens';
 import TabNavigator from './Lab2/components/routers';
+import ToDoApp from './buoi5/ToDoApp';
 
 const App = () => {
   return (
@@ -33,13 +33,13 @@ const App = () => {
     //<FormLogin />
     //<Calculator />
     //<Provider store={store}>
-    <TabNavigator />
+    //<TabNavigator />
     // </Provider>
     //<Index />
     /*<NavigationContainer>
       <MyDrawer />
     </NavigationContainer>*/
-
+    <ToDoApp />
   );
 };
 
