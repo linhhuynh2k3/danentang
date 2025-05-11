@@ -13,12 +13,13 @@ import Project7 from './Lab1/Project7';
 import Project8 from './Lab1/Project8';
 import FormLogin from './buoi3/FormLogin';
 import Calculator from './Lab1/Calycurator';
-import { Provider } from 'react-redux';
 import Index from './buoi4/Index';
 import MyDrawer from './buoi4/MyDrawer';
 import { enableScreens, enableFreeze } from 'react-native-screens';
 import TabNavigator from './Lab2/components/routers';
 import ToDoApp from './buoi5/ToDoApp';
+import Apprun from './Lab3/apprun';
+import AppRun from './Newlab3/apprun';
 
 const App = () => {
   return (
@@ -39,7 +40,9 @@ const App = () => {
     /*<NavigationContainer>
       <MyDrawer />
     </NavigationContainer>*/
-    <ToDoApp />
+    //<ToDoApp />
+    <Apprun />
+    //<AppRun />
   );
 };
 
