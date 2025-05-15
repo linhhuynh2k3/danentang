@@ -1,114 +1,72 @@
-import { View, FlatList, Alert, ActivityIndicator } from 'react-native';
-import { Card, Text, IconButton, TextInput } from 'react-native-paper';
+import React, { useEffect, useState } from 'react';
+import { View, FlatList, Alert } from 'react-native';
+import { Card, Text, Button } from 'react-native-paper';
+import { getFirestore, collection, onSnapshot } from '@react-native-firebase/firestore';
 import { useMyContextController } from '../store';
-import React, { useState, useEffect } from 'react';
-import firestore from '@react-native-firebase/firestore';
+
+const db = getFirestore();
 
 const Services = ({ navigation }) => {
-    const [controller, dispatch] = useMyContextController();
-    const { services, userLogin } = controller;
+    const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filteredServices, setFilteredServices] = useState(services);
+    const [state] = useMyContextController(); // Sửa từ controller thành state
+    const { userLogin } = state; // Sửa từ controller thành state
+
+    console.log('userLogin trong Services:', userLogin);
+    console.log('userLogin.role:', userLogin?.role);
 
     useEffect(() => {
-        const subscriber = firestore()
-            .collection('Services')
-            .onSnapshot(
-                querySnapshot => {
-                    const services = [];
-                    querySnapshot.forEach(doc => {
-                        services.push({
-                            id: doc.id,
-                            name: doc.data().name || 'Không có tên',
-                            price: doc.data().price || 0,
-                            description: doc.data().description
-                        });
-                    });
-                    dispatch({ type: 'SET_SERVICES', payload: services });
-                    setFilteredServices(services);
-                    setLoading(false);
-                },
-                error => {
-                    console.error("Lỗi realtime listener:", error);
-                    setError(error.message);
-                    setLoading(false);
-                }
-            );
+        const unsubscribe = onSnapshot(collection(db, 'Services'), (snapshot) => {
+            const serviceList = [];
+            snapshot.forEach(doc => {
+                serviceList.push({ id: doc.id, ...doc.data() });
+            });
+            setServices(serviceList);
+            setLoading(false);
+        }, (error) => {
+            console.log('Lỗi khi lấy danh sách dịch vụ:', error);
+            Alert.alert('Lỗi', error.message);
+            setLoading(false);
+        });
 
-        return () => subscriber();
+        return () => unsubscribe();
     }, []);
 
-    useEffect(() => {
-        setFilteredServices(
-            services.filter(service =>
-                service.name.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-        );
-    }, [searchQuery, services]);
+    const handleDetail = (service) => {
+        console.log('Service được truyền:', service); // Thêm log để kiểm tra
+        navigation.navigate('ServiceDetail', { service });
+    };
 
     if (loading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator animating={true} size="large" />
-            </View>
-        );
-    }
-
-    if (error) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>
-                <Button onPress={() => setLoading(true)}>Thử lại</Button>
+                <Text>Đang tải...</Text>
             </View>
         );
     }
 
     return (
         <View style={{ flex: 1, padding: 10 }}>
-            <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 15
-            }}>
-                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>DANH SÁCH DỊCH VỤ</Text>
-                {userLogin?.role === 'admin' && (
-                    <IconButton
-                        icon="plus"
-                        size={24}
-                        onPress={() => navigation.navigate('AddNewService')}
-                    />
-                )}
-            </View>
-            <TextInput
-                label="Tìm kiếm dịch vụ"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                style={{ marginBottom: 10 }}
-            />
+            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 15 }}>
+                DANH SÁCH DỊCH VỤ
+            </Text>
             <FlatList
-                data={filteredServices}
+                data={services}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
-                    <Card
-                        style={{
-                            marginBottom: 10,
-                            elevation: 3,
-                            borderRadius: 8
-                        }}
-                        onPress={() => navigation.navigate('ServiceDetail', { service: item })}
-                    >
+                    <Card style={{ marginBottom: 10, elevation: 3, borderRadius: 8 }}>
                         <Card.Content>
-                            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.name}</Text>
-                            <Text style={{ color: 'red', marginTop: 5 }}>
-                                {item.price.toLocaleString('vi-VN')} đ
+                            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>
+                                {item.name}
                             </Text>
-                            {item.description && (
-                                <Text style={{ marginTop: 5 }}>{item.description}</Text>
-                            )}
+                            <Text style={{ marginTop: 5 }}>Mô tả: {item.description}</Text>
+                            <Text style={{ marginTop: 5 }}>Giá: {item.price} VNĐ</Text>
                         </Card.Content>
+                        <Card.Actions>
+                            <Button onPress={() => handleDetail(item)}>
+                                Chi tiết
+                            </Button>
+                        </Card.Actions>
                     </Card>
                 )}
                 ListEmptyComponent={
@@ -117,6 +75,15 @@ const Services = ({ navigation }) => {
                     </Text>
                 }
             />
+            {userLogin && userLogin.role === 'admin' && (
+                <Button
+                    mode="contained"
+                    onPress={() => navigation.navigate('AddNewService')}
+                    style={{ marginTop: 10 }}
+                >
+                    Thêm dịch vụ mới
+                </Button>
+            )}
         </View>
     );
 };

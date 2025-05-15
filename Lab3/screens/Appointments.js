@@ -5,13 +5,13 @@ import firestore from '@react-native-firebase/firestore';
 import { useMyContextController } from '../store';
 
 const Appointments = ({ navigation }) => {
-    const [controller, dispatch] = useMyContextController();
-    const { appointments, userLogin } = controller;
+    const [state, dispatch, { loadAppointments }] = useMyContextController();
+    const { appointments, userLogin } = state;
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (userLogin?.role === 'customer') {
-            controller[2].loadAppointments(userLogin.email, userLogin.role);
+            loadAppointments(userLogin.email, userLogin.role);
         }
         setLoading(false);
     }, [userLogin]);

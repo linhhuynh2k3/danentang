@@ -5,13 +5,13 @@ import firestore from '@react-native-firebase/firestore';
 import { useMyContextController } from '../store';
 
 const Transaction = ({ navigation }) => {
-    const [controller, dispatch] = useMyContextController();
+    const [controller, dispatch, { loadAppointments }] = useMyContextController(); // Sửa dòng này
     const { appointments, userLogin } = controller;
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (userLogin?.role === 'admin') {
-            controller[2].loadAppointments(userLogin.email, userLogin.role);
+            loadAppointments(userLogin.email, userLogin.role); // Gọi hàm trực tiếp
         }
         setLoading(false);
     }, [userLogin]);

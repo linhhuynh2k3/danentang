@@ -1,90 +1,74 @@
-import { View } from "react-native";
-import { Button, HelperText, Text, TextInput } from "react-native-paper";
-import { login, useMyContextController } from "../store";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { View, Alert } from 'react-native';
+import { TextInput, Button } from 'react-native-paper';
+import { getAuth, signInWithEmailAndPassword } from '@react-native-firebase/auth';
+import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
+import { useMyContextController } from '../store';
+
+const auth = getAuth();
+const db = getFirestore();
 
 const Login = ({ navigation }) => {
-    const [controller, dispatch] = useMyContextController();
-    const { userLogin } = controller;
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [hiddenPassword, setHiddenPassword] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [controller, dispatch] = useMyContextController();
 
-    const hasErrorEmail = () => !email.includes("@");
-    const hasErrorPassword = () => password.length < 6;
+  const handleLogin = async () => {
+    try {
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      console.log('User data after login:', user); // Debug: Kiểm tra user
 
-    const handleLogin = () => {
-        login(dispatch, email, password);
-    };
-
-    useEffect(() => {
-        console.log("User data after login:", userLogin); // Thêm dòng này
-
-        if (userLogin) {
-            console.log("User role:", userLogin.role); // Kiểm tra role nhận được
-
-            if (userLogin.role === "admin") {
-                navigation.navigate("Admin");
-            } else {
-                navigation.navigate("Customer");
-            }
+      if (user) {
+        // Lấy thông tin người dùng từ Firestore (bao gồm role)
+        const userDoc = await getDoc(doc(db, 'USERS', user.email));
+        if (userDoc.exists()) {
+          const userData = { ...userDoc.data(), email: user.email, uid: user.uid };
+          console.log('User data from Firestore:', userData); // Debug: Kiểm tra dữ liệu từ Firestore
+          dispatch({ type: 'SET_USER', payload: userData });
+          
+          if (userData.role === 'admin') {
+            navigation.navigate('Admin');
+          } else {
+            navigation.navigate('Customer');
+          }
+        } else {
+          Alert.alert('Lỗi', 'Không tìm thấy thông tin người dùng trong Firestore.');
         }
-    }, [userLogin]);
+      } else {
+        Alert.alert('Lỗi', 'Không thể lấy thông tin người dùng.');
+      }
+    } catch (e) {
+      console.log('Lỗi đăng nhập:', e);
+      Alert.alert('Lỗi đăng nhập', e.message);
+    }
+  };
 
-    return (
-        <View style={{ flex: 1, padding: 10 }}>
-            <Text style={{
-                fontSize: 40,
-                fontWeight: "bold",
-                alignSelf: "center",
-                color: "blue",
-                marginTop: 80,
-                marginBottom: 30
-            }}>Login</Text>
-
-            <TextInput
-                label={"Email"}
-                value={email}
-                onChangeText={setEmail}
-            />
-            <HelperText type="error" visible={hasErrorEmail()}>
-                Địa chỉ Email không hợp lệ
-            </HelperText>
-
-            <TextInput
-                label={"Password"}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={hiddenPassword}
-                right={<TextInput.Icon icon="eye" onPress={() => setHiddenPassword(!hiddenPassword)} />}
-            />
-            <HelperText type="error" visible={hasErrorPassword()}>
-                Password ít nhất 6 kí tự
-            </HelperText>
-
-            <Button
-                mode="contained"
-                buttonColor='blue'
-                onPress={handleLogin}
-                style={{ marginTop: 20 }}
-            >
-                Login
-            </Button>
-
-            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 20 }}>
-                <Text>Don't have an account?</Text>
-                <Button onPress={() => navigation.navigate("Register")}>
-                    Create new account
-                </Button>
-            </View>
-
-            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-                <Button onPress={() => navigation.navigate("ForgotPassword")}>
-                    Forgot Password
-                </Button>
-            </View>
-        </View>
-    );
+  return (
+    <View style={{ flex: 1, padding: 20 }}>
+      <TextInput
+        label="Email"
+        value={email}
+        onChangeText={setEmail}
+        style={{ marginBottom: 10 }}
+      />
+      <TextInput
+        label="Mật khẩu"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        style={{ marginBottom: 20 }}
+      />
+      <Button mode="contained" onPress={handleLogin}>
+        Đăng nhập
+      </Button>
+      <Button mode="text" onPress={() => navigation.navigate('Register')} style={{ marginTop: 10 }}>
+        Đăng ký
+      </Button>
+      <Button mode="text" onPress={() => navigation.navigate('ForgotPassword')} style={{ marginTop: 10 }}>
+        Quên mật khẩu?
+      </Button>
+    </View>
+  );
 };
 
 export default Login;

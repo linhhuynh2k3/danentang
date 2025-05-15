@@ -1,137 +1,79 @@
-import { Alert, View } from "react-native";
-import { Button, HelperText, Text, TextInput } from "react-native-paper";
-import { useState } from "react";
-import firestore from "@react-native-firebase/firestore";
-import auth from "@react-native-firebase/auth";
+import React, { useState } from 'react';
+import { View, Alert } from 'react-native';
+import { TextInput, Button } from 'react-native-paper';
+import { getAuth, createUserWithEmailAndPassword } from '@react-native-firebase/auth';
+import { getFirestore, collection, doc, setDoc } from '@react-native-firebase/firestore';
+
+// Khởi tạo auth và firestore bằng modular API
+const auth = getAuth();
+const db = getFirestore();
 
 const Register = ({ navigation }) => {
-    const [fullName, setFullName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [passwordConfirm, setPasswordConfirm] = useState("");
-    const [hiddenPassword, setHiddenPassword] = useState(true);
-    const [hiddenPasswordConfirm, setHiddenPasswordConfirm] = useState(true);
-    const [phone, setPhone] = useState("");
-    const [address, setAddress] = useState("");
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
+    const USERS = collection(db, "USERS"); // Sử dụng modular API để truy cập collection
 
-    const hasErrorFullName = () => fullName === "";
-    const hasErrorEmail = () => !email.includes("@");
-    const hasErrorPassword = () => password.length < 6;
-    const hasErrorPasswordConfirm = () => passwordConfirm !== password;
-
-    const USERS = firestore().collection("USERS");
-
-    const handleCreateAccount = () => {
-        auth()
-            .createUserWithEmailAndPassword(email, password)
-            .then((response) => {
-                USERS.doc(email).set({
-                    fullName,
-                    email,
-                    password,
-                    phone,
-                    address,
-                    role: "customer",
-                });
-                navigation.navigate("Login");
-            })
-            .catch((e) => Alert.alert("Tài khoản đã tồn tại"));
+    const handleRegister = async () => {
+        try {
+            // Sử dụng createUserWithEmailAndPassword từ modular API
+            const response = await createUserWithEmailAndPassword(auth, email, password);
+            // Sử dụng setDoc để lưu dữ liệu vào Firestore
+            await setDoc(doc(USERS, email), {
+                fullName,
+                email,
+                phone,
+                address,
+                role: "customer"
+            });
+            Alert.alert("Đăng ký thành công", "Bạn đã đăng ký thành công!");
+            navigation.navigate("Login");
+        } catch (e) {
+            Alert.alert("Lỗi đăng ký", e.message);
+        }
     };
 
     return (
-        <View style={{ flex: 1, padding: 10 }}>
-            <Text
-                style={{
-                    fontSize: 30,
-                    fontWeight: "bold",
-                    alignSelf: "center",
-                    color: "pink",
-                    marginTop: 50,
-                    marginBottom: 50,
-                }}
-            >
-                Register New Account
-            </Text>
-
+        <View style={{ flex: 1, padding: 20 }}>
             <TextInput
-                label="Full Name"
+                label="Họ và tên"
                 value={fullName}
                 onChangeText={setFullName}
+                style={{ marginBottom: 10 }}
             />
-            <HelperText type="error" visible={hasErrorFullName()}>
-                Full name không được phép để trống
-            </HelperText>
-
-            <TextInput label="Email" value={email} onChangeText={setEmail} />
-            <HelperText type="error" visible={hasErrorEmail()}>
-                Địa chỉ email không hợp lệ
-            </HelperText>
-
             <TextInput
-                label="Password"
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                style={{ marginBottom: 10 }}
+            />
+            <TextInput
+                label="Mật khẩu"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry={hiddenPassword}
-                right={
-                    <TextInput.Icon
-                        icon="eye"
-                        onPress={() => setHiddenPassword(!hiddenPassword)}
-                    />
-                }
+                secureTextEntry
+                style={{ marginBottom: 10 }}
             />
-            <HelperText type="error" visible={hasErrorPassword()}>
-                Password ít nhất 6 kí tự
-            </HelperText>
-
             <TextInput
-                label="Confirm Password"
-                value={passwordConfirm}
-                onChangeText={setPasswordConfirm}
-                secureTextEntry={hiddenPasswordConfirm}
-                right={
-                    <TextInput.Icon
-                        icon="eye"
-                        onPress={() =>
-                            setHiddenPasswordConfirm(!hiddenPasswordConfirm)
-                        }
-                    />
-                }
+                label="Số điện thoại"
+                value={phone}
+                onChangeText={setPhone}
+                style={{ marginBottom: 10 }}
             />
-            <HelperText type="error" visible={hasErrorPasswordConfirm()}>
-                Confirm Password phải so khớp với password
-            </HelperText>
-
             <TextInput
-                label="Address"
+                label="Địa chỉ"
                 value={address}
                 onChangeText={setAddress}
                 style={{ marginBottom: 20 }}
             />
-
-            <TextInput
-                label="Phone"
-                value={phone}
-                onChangeText={setPhone}
-                style={{ marginBottom: 20 }}
-            />
-
-            <Button mode="contained" onPress={handleCreateAccount}>
-                Create New Account
+            <Button mode="contained" onPress={handleRegister}>
+                Đăng ký
             </Button>
-
-            <View
-                style={{
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    marginTop: 10,
-                }}
-            >
-                <Text>Do you have an account?</Text>
-                <Button onPress={() => navigation.navigate("Login")}>
-                    Login Account
-                </Button>
-            </View>
+            <Button mode="text" onPress={() => navigation.navigate("Login")} style={{ marginTop: 10 }}>
+                Đã có tài khoản? Đăng nhập
+            </Button>
         </View>
     );
 };

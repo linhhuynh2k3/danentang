@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, Alert, ActivityIndicator } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
-import firestore from '@react-native-firebase/firestore';
+import { getFirestore, collection, query, where, onSnapshot } from '@react-native-firebase/firestore';
 import { useMyContextController } from '../store';
+
+const db = getFirestore();
 
 const Customers = ({ navigation }) => {
     const [controller, dispatch] = useMyContextController();
@@ -10,26 +12,25 @@ const Customers = ({ navigation }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const subscriber = firestore()
-            .collection('USERS')
-            .where('role', '==', 'customer')
-            .onSnapshot(
-                querySnapshot => {
-                    const customerList = [];
-                    querySnapshot.forEach(doc => {
-                        customerList.push({
-                            email: doc.id,
-                            ...doc.data()
-                        });
+        const q = query(collection(db, 'USERS'), where('role', '==', 'customer'));
+        const subscriber = onSnapshot(
+            q,
+            (querySnapshot) => {
+                const customerList = [];
+                querySnapshot.forEach(doc => {
+                    customerList.push({
+                        email: doc.id,
+                        ...doc.data()
                     });
-                    setCustomers(customerList);
-                    setLoading(false);
-                },
-                error => {
-                    Alert.alert("Lỗi", error.message);
-                    setLoading(false);
-                }
-            );
+                });
+                setCustomers(customerList);
+                setLoading(false);
+            },
+            (error) => {
+                Alert.alert("Lỗi", error.message);
+                setLoading(false);
+            }
+        );
         return () => subscriber();
     }, []);
 

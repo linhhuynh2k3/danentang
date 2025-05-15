@@ -1,142 +1,138 @@
-import { useState, useEffect } from 'react';
-import { View, Alert } from 'react-native';
-import { Button, TextInput } from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, Alert, ScrollView } from 'react-native';
+import { TextInput, Button, Text, Card } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 import { useMyContextController } from '../store';
 
 const ServiceDetail = ({ route, navigation }) => {
-    const { service } = route.params;
-    const [controller, dispatch] = useMyContextController();
-    const { userLogin } = controller;
-    const [name, setName] = useState(service.name);
-    const [price, setPrice] = useState(String(service.price));
-    const [description, setDescription] = useState(service.description);
+    const { service } = route.params || {};
+    const [state] = useMyContextController(); // Sửa từ controller thành state
+    const { userLogin } = state;
+
+    const [name, setName] = useState(service?.name || '');
+    const [description, setDescription] = useState(service?.description || '');
+    const [price, setPrice] = useState(service?.price ? service.price.toString() : '');
     const [appointmentDate, setAppointmentDate] = useState('');
-    const [note, setNote] = useState('');
+
+    console.log('Service trong ServiceDetail:', service);
+    console.log('userLogin trong ServiceDetail:', userLogin);
+    console.log('userLogin.role:', userLogin?.role);
 
     const handleUpdate = async () => {
+        if (!name || !description || !price) {
+            Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
+            return;
+        }
         try {
-            await firestore()
-                .collection('Services')
-                .doc(service.id)
-                .update({
-                    name,
-                    price: parseInt(price),
-                    description
-                });
-            Alert.alert("Thành công", "Cập nhật dịch vụ thành công");
+            await firestore().collection('Services').doc(service.id).update({
+                name,
+                description,
+                price: parseFloat(price),
+            });
+            Alert.alert('Thành công', 'Cập nhật dịch vụ thành công');
             navigation.goBack();
         } catch (error) {
-            Alert.alert("Lỗi", error.message);
+            Alert.alert('Lỗi', error.message);
         }
+    };
+
+    const handleDelete = () => {
+        navigation.navigate('ServiceDelete', { serviceId: service.id });
     };
 
     const handleBookAppointment = async () => {
         if (!appointmentDate) {
-            Alert.alert("Lỗi", "Vui lòng chọn ngày hẹn");
+            Alert.alert('Lỗi', 'Vui lòng chọn ngày hẹn');
             return;
         }
         try {
             await firestore().collection('Appointments').add({
                 serviceId: service.id,
                 customerEmail: userLogin.email,
-                date: firestore.Timestamp.fromDate(new Date(appointmentDate)),
+                date: new Date(appointmentDate),
                 status: 'pending',
-                note
+                note: '',
             });
-            Alert.alert("Thành công", "Đặt lịch hẹn thành công");
-            navigation.goBack();
+            Alert.alert('Thành công', 'Đặt lịch hẹn thành công');
+            setAppointmentDate('');
         } catch (error) {
-            Alert.alert("Lỗi", error.message);
+            Alert.alert('Lỗi', error.message);
         }
     };
 
+    if (!service) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text>Lỗi: Không tìm thấy thông tin dịch vụ</Text>
+                <Button mode="contained" onPress={() => navigation.goBack()}>
+                    Quay lại
+                </Button>
+            </View>
+        );
+    }
+
     return (
-        <View style={{ flex: 1, padding: 20 }}>
-            {userLogin?.role === 'admin' ? (
-                <>
+        <ScrollView style={{ padding: 10 }}>
+            <Card style={{ marginBottom: 20, elevation: 3, borderRadius: 8 }}>
+                <Card.Content>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>
+                        CHI TIẾT DỊCH VỤ
+                    </Text>
                     <TextInput
                         label="Tên dịch vụ"
                         value={name}
                         onChangeText={setName}
                         style={{ marginBottom: 10 }}
-                    />
-                    <TextInput
-                        label="Giá dịch vụ"
-                        value={price}
-                        onChangeText={setPrice}
-                        keyboardType="numeric"
-                        style={{ marginBottom: 10 }}
+                        disabled={userLogin?.role !== 'admin'}
                     />
                     <TextInput
                         label="Mô tả"
                         value={description}
                         onChangeText={setDescription}
                         multiline
-                        style={{ marginBottom: 20 }}
-                    />
-                    <Button
-                        mode="contained"
-                        onPress={handleUpdate}
                         style={{ marginBottom: 10 }}
-                    >
+                        disabled={userLogin?.role !== 'admin'}
+                    />
+                    <TextInput
+                        label="Giá"
+                        value={price}
+                        onChangeText={setPrice}
+                        keyboardType="numeric"
+                        style={{ marginBottom: 10 }}
+                        disabled={userLogin?.role !== 'admin'}
+                    />
+                </Card.Content>
+            </Card>
+
+            {userLogin && userLogin.role === 'admin' && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Button mode="contained" onPress={handleUpdate}>
                         Cập nhật
                     </Button>
-                    <Button
-                        mode="outlined"
-                        onPress={() => navigation.goBack()}
-                    >
-                        Hủy
+                    <Button mode="contained" onPress={handleDelete} buttonColor="red">
+                        Xóa
                     </Button>
-                    <Button
-                        mode="contained"
-                        buttonColor="red"
-                        onPress={() => navigation.navigate('ServiceDelete', { service })}
-                        style={{ marginTop: 10 }}
-                    >
-                        Xóa dịch vụ
-                    </Button>
-                </>
-            ) : (
+                </View>
+            )}
+
+            {userLogin && userLogin.role === 'customer' && (
                 <>
-                    <TextInput
-                        label="Tên dịch vụ"
-                        value={name}
-                        editable={false}
-                        style={{ marginBottom: 10 }}
-                    />
-                    <TextInput
-                        label="Giá dịch vụ"
-                        value={price}
-                        editable={false}
-                        style={{ marginBottom: 10 }}
-                    />
-                    <TextInput
-                        label="Mô tả"
-                        value={description}
-                        editable={false}
-                        multiline
-                        style={{ marginBottom: 20 }}
-                    />
                     <TextInput
                         label="Ngày hẹn (YYYY-MM-DD)"
                         value={appointmentDate}
                         onChangeText={setAppointmentDate}
                         style={{ marginBottom: 10 }}
                     />
-                    <TextInput
-                        label="Ghi chú"
-                        value={note}
-                        onChangeText={setNote}
-                        multiline
-                        style={{ marginBottom: 20 }}
-                    />
-                    <Button mode="contained" onPress={handleBookAppointment}>
+                    <Button
+                        mode="contained"
+                        onPress={handleBookAppointment}
+                        style={{ marginTop: 10 }}
+                    >
                         Đặt lịch hẹn
                     </Button>
                 </>
             )}
-        </View>
+        </ScrollView>
     );
 };
 

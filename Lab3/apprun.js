@@ -1,15 +1,16 @@
 import { MyContextControllerProvider } from "./store/index";
-import firestore from "@react-native-firebase/firestore";
-import auth from "@react-native-firebase/auth";
+import { doc, getFirestore, getDoc, setDoc } from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 import { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import Router from "./routers/Router";
 import { LogBox } from "react-native";
 import { Provider as PaperProvider } from 'react-native-paper';
 
-const Apprun = () => {
-    const USERS = firestore().collection("USERS");
+// ✅ Khai báo database Firestore
+const db = getFirestore();
 
+const Apprun = () => {
     const admin = {
         fullName: "Admin",
         email: "linhhuynh24072003@gmail.com",
@@ -24,26 +25,26 @@ const Apprun = () => {
     }, []);
 
     useEffect(() => {
-        const checkAndCreateAdmin = async () => {
+        const checkAndCreateAdmin = async (retryCount = 0) => {
             try {
-                const doc = await USERS.doc(admin.email).get();
-                if (!doc.exists) {
-                    try {
-                        await auth().createUserWithEmailAndPassword(admin.email, admin.password);
-
-                        // Không lưu mật khẩu vào Firestore
-                        const { password, ...adminData } = admin;
-                        await USERS.doc(admin.email).set(adminData);
-
-                        console.log("✅ Admin account created.");
-                    } catch (authError) {
-                        console.log("❌ Firebase Auth error:", authError.message);
-                    }
+                const docRef = doc(db, "USERS", admin.email); // ✅ Sử dụng biến admin đúng vị trí
+                const snapshot = await getDoc(docRef);
+                if (!snapshot.exists()) {
+                    await auth().createUserWithEmailAndPassword(admin.email, admin.password);
+                    const { password, ...adminData } = admin;
+                    await setDoc(docRef, adminData);
+                    console.log("✅ Admin account created.");
                 } else {
                     console.log("ℹ️ Admin already exists in Firestore.");
                 }
             } catch (err) {
-                console.log("❌ Error checking admin in Firestore:", err.message);
+                console.log(`❌ Firestore error at retry ${retryCount + 1}:`, err.message);
+                if (retryCount < 3) {
+                    const delay = 1000 * Math.pow(2, retryCount);
+                    setTimeout(() => checkAndCreateAdmin(retryCount + 1), delay);
+                } else {
+                    console.log("❌ Max retries reached.");
+                }
             }
         };
 

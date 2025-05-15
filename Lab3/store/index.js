@@ -19,7 +19,10 @@ const initialState = {
 const reducer = (state, action) => {
     switch (action.type) {
         case "USER_LOGIN":
+            console.log('Cập nhật userLogin:', action.payload);
             return { ...state, userLogin: action.value };
+        case "SET_USER": // Thêm case này
+            return { ...state, userLogin: action.payload };
         case "USER_LOGOUT":
             return { ...state, userLogin: null };
         case "SET_SERVICES":
@@ -141,11 +144,15 @@ export const updateProfile = async (email, data) => {
 export const changePassword = async (currentPassword, newPassword) => {
     try {
         const user = auth().currentUser;
+        if (!user) {
+            throw new Error('Không tìm thấy người dùng hiện tại');
+        }
         const credential = auth.EmailAuthProvider.credential(user.email, currentPassword);
         await user.reauthenticateWithCredential(credential);
         await user.updatePassword(newPassword);
         Alert.alert("Thành công", "Đổi mật khẩu thành công");
     } catch (error) {
-        Alert.alert("Lỗi", error.message);
+        console.log('Lỗi đổi mật khẩu:', error.message); // Log lỗi để debug
+        Alert.alert("Lỗi", error.message || 'Đã xảy ra lỗi khi đổi mật khẩu');
     }
 };
