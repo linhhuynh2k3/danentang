@@ -12,7 +12,20 @@
           "package_name": "com.demoreactnative"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "935699751317-ch5l3oud0pn0ujc1t6m3b16rl50l9rf9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.demoreactnative",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "935699751317-11i6tjhh80go65bt14s9c5un23arvb4q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDz4DTUnILAAXP5FFHHK5T562wF06LqeXk"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "935699751317-11i6tjhh80go65bt14s9c5un23arvb4q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

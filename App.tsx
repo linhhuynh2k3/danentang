@@ -19,7 +19,7 @@ import { enableScreens, enableFreeze } from 'react-native-screens';
 import TabNavigator from './Lab2/components/routers';
 import ToDoApp from './buoi5/ToDoApp';
 import Apprun from './Lab3/apprun';
-import AppRun from './Newlab3/apprun';
+import CodeRun from './GK/CodeRun';
 
 const App = () => {
   return (
@@ -41,8 +41,9 @@ const App = () => {
       <MyDrawer />
     </NavigationContainer>*/
     //<ToDoApp />
-    <Apprun />
+    //<Apprun />
     //<AppRun />
+    <CodeRun/>
   );
 };
 
