@@ -41,9 +41,9 @@ const App = () => {
       <MyDrawer />
     </NavigationContainer>*/
     //<ToDoApp />
-    //<Apprun />
-    //<AppRun />
-    <CodeRun/>
+    <Apprun />
+
+    //<CodeRun/>
   );
 };
 

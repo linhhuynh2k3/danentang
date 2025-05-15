@@ -1,13 +1,13 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import Services from '../screens/Services';
-import AddNewService from '../screens/AddNewService';
 import ServiceDetail from '../screens/ServiceDetail';
-import ServiceDelete from '../screens/ServiceDelete';
+import Appointments from '../screens/Appointments';
 import UpdateAppointment from '../screens/UpdateAppointment';
+import Profile from '../screens/Profile';
 
 const Stack = createStackNavigator();
 
-const RouterService = () => {
+const RouterCustomer = () => {
     return (
         <Stack.Navigator>
             <Stack.Screen
@@ -16,27 +16,27 @@ const RouterService = () => {
                 options={{ title: 'Danh sách dịch vụ' }}
             />
             <Stack.Screen
-                name="AddNewService"
-                component={AddNewService}
-                options={{ title: 'Thêm dịch vụ mới' }}
-            />
-            <Stack.Screen
                 name="ServiceDetail"
                 component={ServiceDetail}
                 options={{ title: 'Chi tiết dịch vụ' }}
             />
             <Stack.Screen
-                name="ServiceDelete"
-                component={ServiceDelete}
-                options={{ title: 'Xóa dịch vụ' }}
+                name="Appointments"
+                component={Appointments}
+                options={{ title: 'Lịch hẹn' }}
             />
             <Stack.Screen
                 name="UpdateAppointment"
                 component={UpdateAppointment}
                 options={{ title: 'Cập nhật lịch hẹn' }}
             />
+            <Stack.Screen
+                name="Profile"
+                component={Profile}
+                options={{ title: 'Hồ sơ' }}
+            />
         </Stack.Navigator>
     );
 };
 
-export default RouterService;
+export default RouterCustomer;

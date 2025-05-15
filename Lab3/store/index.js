@@ -5,11 +5,13 @@ import { Alert } from "react-native";
 
 const MyContext = createContext();
 const USERS = firestore().collection("USERS");
-const SERVICES = firestore().collection("Services"); // Thêm collection Services
+const SERVICES = firestore().collection("Services");
+const APPOINTMENTS = firestore().collection("Appointments");
 
 const initialState = {
     userLogin: null,
     services: [],
+    appointments: [],
     loading: false,
     error: null
 };
@@ -22,6 +24,8 @@ const reducer = (state, action) => {
             return { ...state, userLogin: null };
         case "SET_SERVICES":
             return { ...state, services: action.payload };
+        case "SET_APPOINTMENTS":
+            return { ...state, appointments: action.payload };
         case "SET_LOADING":
             return { ...state, loading: action.payload };
         case "SET_ERROR":
@@ -34,7 +38,6 @@ const reducer = (state, action) => {
 export const MyContextControllerProvider = ({ children }) => {
     const [controller, dispatch] = useReducer(reducer, initialState);
 
-    // Thêm hàm loadServices vào context
     const loadServices = () => {
         dispatch({ type: "SET_LOADING", payload: true });
         SERVICES.get()
@@ -56,8 +59,33 @@ export const MyContextControllerProvider = ({ children }) => {
             });
     };
 
+    const loadAppointments = (email, role) => {
+        dispatch({ type: "SET_LOADING", payload: true });
+        let query = APPOINTMENTS;
+        if (role === "customer") {
+            query = query.where("customerEmail", "==", email);
+        }
+        query.get()
+            .then(querySnapshot => {
+                const appointments = [];
+                querySnapshot.forEach(doc => {
+                    appointments.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                dispatch({ type: "SET_APPOINTMENTS", payload: appointments });
+            })
+            .catch(error => {
+                dispatch({ type: "SET_ERROR", payload: error.message });
+            })
+            .finally(() => {
+                dispatch({ type: "SET_LOADING", payload: false });
+            });
+    };
+
     return (
-        <MyContext.Provider value={[controller, dispatch, { loadServices }]}>
+        <MyContext.Provider value={[controller, dispatch, { loadServices, loadAppointments }]}>
             {children}
         </MyContext.Provider>
     );
@@ -99,4 +127,25 @@ export const resetPassword = (email) => {
     return auth().sendPasswordResetEmail(email)
         .then(() => Alert.alert("Thành công", "Vui lòng kiểm tra email"))
         .catch(error => Alert.alert("Lỗi", error.message));
+};
+
+export const updateProfile = async (email, data) => {
+    try {
+        await USERS.doc(email).update(data);
+        Alert.alert("Thành công", "Cập nhật thông tin thành công");
+    } catch (error) {
+        Alert.alert("Lỗi", error.message);
+    }
+};
+
+export const changePassword = async (currentPassword, newPassword) => {
+    try {
+        const user = auth().currentUser;
+        const credential = auth.EmailAuthProvider.credential(user.email, currentPassword);
+        await user.reauthenticateWithCredential(credential);
+        await user.updatePassword(newPassword);
+        Alert.alert("Thành công", "Đổi mật khẩu thành công");
+    } catch (error) {
+        Alert.alert("Lỗi", error.message);
+    }
 };

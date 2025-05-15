@@ -4,24 +4,22 @@ import { Card, Text, Button } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 import { useMyContextController } from '../store';
 
-const Transaction = ({ navigation }) => {
+const Appointments = ({ navigation }) => {
     const [controller, dispatch] = useMyContextController();
     const { appointments, userLogin } = controller;
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (userLogin?.role === 'admin') {
+        if (userLogin?.role === 'customer') {
             controller[2].loadAppointments(userLogin.email, userLogin.role);
         }
         setLoading(false);
     }, [userLogin]);
 
-    const handleAccept = async (appointmentId) => {
+    const handleDelete = async (appointmentId) => {
         try {
-            await firestore().collection('Appointments').doc(appointmentId).update({
-                status: 'accepted'
-            });
-            Alert.alert("Thành công", "Đã chấp nhận lịch hẹn");
+            await firestore().collection('Appointments').doc(appointmentId).delete();
+            Alert.alert("Thành công", "Xóa lịch hẹn thành công");
         } catch (error) {
             Alert.alert("Lỗi", error.message);
         }
@@ -42,7 +40,7 @@ const Transaction = ({ navigation }) => {
     return (
         <View style={{ flex: 1, padding: 10 }}>
             <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 15 }}>
-                QUẢN LÝ LỊCH HẸN
+                LỊCH HẸN CỦA BẠN
             </Text>
             <FlatList
                 data={appointments}
@@ -52,9 +50,6 @@ const Transaction = ({ navigation }) => {
                         <Card.Content>
                             <Text style={{ fontWeight: 'bold', fontSize: 16 }}>
                                 Dịch vụ: {item.serviceId}
-                            </Text>
-                            <Text style={{ marginTop: 5 }}>
-                                Khách hàng: {item.customerEmail}
                             </Text>
                             <Text style={{ marginTop: 5 }}>
                                 Ngày: {item.date.toDate().toLocaleString()}
@@ -67,13 +62,11 @@ const Transaction = ({ navigation }) => {
                             )}
                         </Card.Content>
                         <Card.Actions>
-                            {item.status === 'pending' && (
-                                <Button onPress={() => handleAccept(item.id)}>
-                                    Chấp nhận
-                                </Button>
-                            )}
                             <Button onPress={() => handleUpdate(item)}>
                                 Cập nhật
+                            </Button>
+                            <Button onPress={() => handleDelete(item.id)} buttonColor="red">
+                                Xóa
                             </Button>
                         </Card.Actions>
                     </Card>
@@ -88,4 +81,4 @@ const Transaction = ({ navigation }) => {
     );
 };
 
-export default Transaction;
+export default Appointments;

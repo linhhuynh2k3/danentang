@@ -1,6 +1,6 @@
 import { View, FlatList, Alert, ActivityIndicator } from 'react-native';
-import { Card, Text, IconButton } from 'react-native-paper';
-import { useMyContextController, logout } from '../store';
+import { Card, Text, IconButton, TextInput } from 'react-native-paper';
+import { useMyContextController } from '../store';
 import React, { useState, useEffect } from 'react';
 import firestore from '@react-native-firebase/firestore';
 
@@ -9,17 +9,16 @@ const Services = ({ navigation }) => {
     const { services, userLogin } = controller;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filteredServices, setFilteredServices] = useState(services);
 
     useEffect(() => {
-        console.log("Đang kết nối tới Firestore...");
         const subscriber = firestore()
             .collection('Services')
             .onSnapshot(
                 querySnapshot => {
-                    console.log("Nhận được snapshot với", querySnapshot.size, "dịch vụ");
                     const services = [];
                     querySnapshot.forEach(doc => {
-                        console.log("Document ID:", doc.id, "Data:", doc.data());
                         services.push({
                             id: doc.id,
                             name: doc.data().name || 'Không có tên',
@@ -27,8 +26,8 @@ const Services = ({ navigation }) => {
                             description: doc.data().description
                         });
                     });
-                    console.log("Dispatching services:", services);
                     dispatch({ type: 'SET_SERVICES', payload: services });
+                    setFilteredServices(services);
                     setLoading(false);
                 },
                 error => {
@@ -38,11 +37,16 @@ const Services = ({ navigation }) => {
                 }
             );
 
-        return () => {
-            console.log("Hủy đăng ký listener");
-            subscriber();
-        };
+        return () => subscriber();
     }, []);
+
+    useEffect(() => {
+        setFilteredServices(
+            services.filter(service =>
+                service.name.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+        );
+    }, [searchQuery, services]);
 
     if (loading) {
         return (
@@ -78,9 +82,14 @@ const Services = ({ navigation }) => {
                     />
                 )}
             </View>
-
+            <TextInput
+                label="Tìm kiếm dịch vụ"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                style={{ marginBottom: 10 }}
+            />
             <FlatList
-                data={services}
+                data={filteredServices}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
                     <Card
