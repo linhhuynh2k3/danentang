@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-native-firebase/app": "^22.1.0",
     "@react-native-firebase/auth": "^22.1.0",
@@ -23,6 +24,7 @@
     "@react-navigation/native-stack": "^6.11.0",
     "@react-navigation/stack": "^6.3.1",
     "@reduxjs/toolkit": "^2.7.0",
+    "axios": "^1.9.0",
     "react": "19.0.0",
     "react-native": "0.79.0",
     "react-native-drawer": "^2.5.1",

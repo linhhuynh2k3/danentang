@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Provider as PaperProvider } from 'react-native-paper';
-import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import DemoTheme from './buoi3/DemoTheme';
 import HelloWorld from './Lab1/Project1'; // phải đúng với export default
@@ -19,7 +18,16 @@ import { enableScreens, enableFreeze } from 'react-native-screens';
 import TabNavigator from './Lab2/components/routers';
 import ToDoApp from './buoi5/ToDoApp';
 import Apprun from './Lab3/apprun';
-import CodeRun from './GK/CodeRun';
+import { createStackNavigator } from "@react-navigation/stack";
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import BookDetail from './Lab6/screens/BookDetail';
+import Tabs from './Lab6/navigation/tabs';
+import { useEffect, useState } from "react";
+import { auth } from "./Lab6/firebaseConfig";
+import Login from './Lab6/screens/Login';
+import CodeRun from './Lab6/CodeRun';
+
+
 
 const App = () => {
   return (
@@ -41,9 +49,25 @@ const App = () => {
       <MyDrawer />
     </NavigationContainer>*/
     //<ToDoApp />
-    <Apprun />
-
+    //<Apprun />
     //<CodeRun/>
+    <CodeRun />
+    //<NavigationContainer theme={theme}>
+    //         <Stack.Navigator
+    //             screenOptions={{
+    //                 headerShown: false
+    //             }}
+    //             initialRouteName={'Login'}
+    //         >
+                
+    //             {/* Tabs */}
+    //             <Stack.Screen name="Home" component={Tabs} />
+
+    //             {/* Screens */}
+    //             <Stack.Screen name="BookDetail" component={BookDetail} options={{ headerShown: false }} />
+    //         </Stack.Navigator>
+    //     </NavigationContainer>
+
   );
 };
 
