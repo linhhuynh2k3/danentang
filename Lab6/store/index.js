@@ -11,6 +11,7 @@ const Books = firestore().collection("Books");
 
 const initialState = {
     userLogin: null,
+    favorites: [],
     books: [],
     categories: [],
     loading: false,
@@ -27,6 +28,8 @@ const reducer = (state, action) => {
             return { ...state, books: action.payload };
         case "SET_CATEGORIES":
             return { ...state, categories: action.payload };
+        case "SET_FAVORITES":
+            return { ...state, favorites: action.payload };
         case "SET_LOADING":
             return { ...state, loading: action.payload };
         case "SET_ERROR":
@@ -77,6 +80,7 @@ export const MyContextControllerProvider = ({ children }) => {
             });
     };
 
+    // Load danh sách yêu thích
     const loadFavorites = async (uid) => {
         if (!uid) return;
 
@@ -84,17 +88,65 @@ export const MyContextControllerProvider = ({ children }) => {
             const userDoc = await NguoiDung.doc(uid).get();
             if (userDoc.exists) {
                 const userData = userDoc.data();
+                dispatch({ type: "SET_FAVORITES", payload: userData.favorites || [] });
                 return userData.favorites || [];
             }
+            dispatch({ type: "SET_FAVORITES", payload: [] });
             return [];
         } catch (error) {
             console.error("Error loading favorites:", error);
+            dispatch({ type: "SET_ERROR", payload: error.message });
             return [];
         }
     };
 
+    // Cập nhật danh sách yêu thích
+    const toggleFavorite = async (book, currentFavorites) => {
+        if (!controller.userLogin || !controller.userLogin.uid) {
+            Alert.alert("Thông báo", "Vui lòng đăng nhập để sử dụng tính năng này");
+            return;
+        }
+
+        dispatch({ type: "SET_LOADING", payload: true });
+        try {
+            const userRef = NguoiDung.doc(controller.userLogin.uid);
+            const userDoc = await userRef.get();
+            let favorites = userDoc.exists ? userDoc.data().favorites || [] : [];
+
+            const bookToSave = {
+                id: book.id,
+                bookName: book.bookName,
+                author: book.author,
+                bookCover: typeof book.bookCover === "string" ? book.bookCover : book.bookCover?.uri,
+                rating: book.rating,
+                pageNo: book.pageNo,
+                description: book.description,
+                language: book.language,
+                genre: book.genre,
+            };
+
+            if (currentFavorites.some((fav) => fav.id === book.id)) {
+                favorites = favorites.filter((fav) => fav.id !== book.id);
+                Alert.alert("Thành công", "Đã xóa khỏi danh sách yêu thích");
+            } else {
+                favorites.push(bookToSave);
+                Alert.alert("Thành công", "Đã thêm vào danh sách yêu thích");
+            }
+
+            await userRef.set({ favorites }, { merge: true });
+            dispatch({ type: "SET_FAVORITES", payload: favorites });
+        } catch (error) {
+            dispatch({ type: "SET_ERROR", payload: error.message });
+            Alert.alert("Lỗi", "Không thể cập nhật danh sách yêu thích");
+            console.error("Error toggling favorite:", error);
+        } finally {
+            dispatch({ type: "SET_LOADING", payload: false });
+        }
+    };
+
+
     return (
-        <MyContext.Provider value={[controller, dispatch, { loadBooks, loadCategories, loadFavorites }]}>
+        <MyContext.Provider value={[controller, dispatch, { loadBooks, loadCategories, loadFavorites, toggleFavorite }]}>
             {children}
         </MyContext.Provider>
     );
@@ -115,7 +167,7 @@ export const loginUserInfo = async (dispatch, email) => {
         if (!userSnap.empty) {
             const userDoc = userSnap.docs[0];
             const userData = userDoc.data();
-            dispatch({ type: "USER_LOGIN", value: userData });
+            dispatch({ type: "USER_LOGIN", value: { uid: userDoc.id, ...userData } });
         } else {
             Alert.alert("Lỗi", "Không tìm thấy thông tin người dùng.");
         }
