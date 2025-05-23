@@ -1,58 +1,28 @@
-// Lab6/screens/BookReader.js
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, SafeAreaView } from 'react-native';
-import { COLORS, FONTS, SIZES } from '../constants';
-import firestore from '@react-native-firebase/firestore';
-import { useMyContextController } from '../store';
+import React from "react";
+import { View, Text, SafeAreaView } from "react-native";
+import { WebView } from 'react-native-webview'; // Thay đổi import này
+import { FONTS, COLORS } from "../constants";
 
-const BookReader = ({ route, navigation }) => {
-    const [book, setBook] = useState(route.params?.book || null);
-    const [content, setContent] = useState('');
-    const [controller] = useMyContextController();
-    const { userLogin } = controller;
+const BookReader = ({ route }) => {
+    const { book } = route.params;
 
-    useEffect(() => {
-        if (!userLogin) {
-            navigation.navigate('Login');
-            return;
-        }
-
-        // Truy xuất nội dung sách từ Firestore
-        const fetchContent = async () => {
-            if (book) {
-                // Giả sử nội dung sách được lưu trong trường `content` của document sách
-                const bookRef = firestore().collection('Books').where('bookName', '==', book.bookName);
-                const snapshot = await bookRef.get();
-                if (!snapshot.empty) {
-                    const bookData = snapshot.docs[0].data();
-                    setContent(bookData.content || 'No content available.');
-                }
-            }
-        };
-
-        fetchContent();
-    }, [book, userLogin, navigation]);
-
-    if (!book) {
-        return (
-            <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.black }}>
-                <Text style={{ ...FONTS.h2, color: COLORS.white, textAlign: 'center' }}>
-                    No book selected
-                </Text>
-            </SafeAreaView>
-        );
-    }
+    // Sử dụng Google Books API để lấy nội dung sách
+    const bookContentUrl = `https://books.google.com/books?id=${book.id}&lpg=PP1&pg=PP1&output=embed`;
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.black }}>
-            <ScrollView contentContainerStyle={{ padding: SIZES.padding }}>
-                <Text style={{ ...FONTS.h2, color: COLORS.white, marginBottom: SIZES.padding }}>
-                    {book.bookName}
+            <View style={{ flex: 1 }}>
+                <Text style={{ ...FONTS.h2, color: COLORS.white, padding: 20 }}>
+                    {book.bookName} - {book.author}
                 </Text>
-                <Text style={{ ...FONTS.body2, color: COLORS.lightGray }}>
-                    {content}
-                </Text>
-            </ScrollView>
+                <WebView
+                    source={{ uri: bookContentUrl }}
+                    style={{ flex: 1 }}
+                    javaScriptEnabled={true}
+                    domStorageEnabled={true}
+                    startInLoadingState={true}
+                />
+            </View>
         </SafeAreaView>
     );
 };

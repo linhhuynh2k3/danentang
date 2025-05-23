@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { COLORS, FONTS, SIZES, icons, images } from "../constants";
+import { useMyContextController } from "../store";
 
 const LineDivider = () => {
     return (
@@ -21,8 +22,10 @@ const LineDivider = () => {
 };
 
 const Home = ({ navigation }) => {
+    const [controller] = useMyContextController();
+    const { userLogin } = controller;
     const profileData = {
-        name: "Username",
+        name: userLogin?.email || "Username",
         point: 200,
     };
 
@@ -58,48 +61,48 @@ const Home = ({ navigation }) => {
     }, []);
 
     const categoriesData = [
-    {
-        id: 1,
-        categoryName: "Best Seller",
-        books: books.slice(0, 20),
-    },
-    {
-        id: 2,
-        categoryName: "The Latest",
-        books: books.slice(3, 10),
-    },
-    {
-        id: 3,
-        categoryName: "Coming Soon",
-        books: books.slice(4, 5),
-    },
-    {
-        id: 4,
-        categoryName: "Classics",
-        books: books.slice(5, 6),
-    },
-    {
-        id: 5,
-        categoryName: "Fantasy",
-        books: books.slice(6, 7),
-    },
-    {
-        id: 6,
-        categoryName: "Mystery",
-        books: books.slice(7, 8),
-    },
-    {
-        id: 7,
-        categoryName: "Science Fiction",
-        books: books.slice(8, 9),
-    },
-    {
-        id: 8,
-        categoryName: "Biography",
-        books: books.slice(9, 15),
-    },
+        {
+            id: 1,
+            categoryName: "Best Seller",
+            books: books.slice(0, 20),
+        },
+        {
+            id: 2,
+            categoryName: "The Latest",
+            books: books.slice(3, 10),
+        },
+        {
+            id: 3,
+            categoryName: "Coming Soon",
+            books: books.slice(4, 5),
+        },
+        {
+            id: 4,
+            categoryName: "Classics",
+            books: books.slice(5, 6),
+        },
+        {
+            id: 5,
+            categoryName: "Fantasy",
+            books: books.slice(6, 7),
+        },
+        {
+            id: 6,
+            categoryName: "Mystery",
+            books: books.slice(7, 8),
+        },
+        {
+            id: 7,
+            categoryName: "Science Fiction",
+            books: books.slice(8, 9),
+        },
+        {
+            id: 8,
+            categoryName: "Biography",
+            books: books.slice(9, 15),
+        },
 
-];
+    ];
 
     function renderHeader(profile) {
         return (

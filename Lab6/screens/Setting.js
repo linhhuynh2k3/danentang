@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     SafeAreaView,
     View,
@@ -9,21 +9,46 @@ import {
 } from 'react-native';
 import { Button } from 'react-native-paper';
 import { COLORS, FONTS, SIZES, icons } from '../constants';
-import { useMyContextController, logout } from '../store'; // Import từ Lab6\store\index.js
+import { useMyContextController, logout } from '../store';
 import { Alert } from 'react-native';
+import firebase from '@react-native-firebase/app';
+import '../firebaseConfig';
+
+const firestore = firebase.firestore();
 
 const Setting = ({ navigation }) => {
     const [controller, dispatch] = useMyContextController();
     const { userLogin } = controller;
+    const [favorites, setFavorites] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const [favorites, setFavorites] = useState([
-        {
-            id: 1,
-            bookName: 'Other Words For Home',
-            bookCover: require('../assets/images/other_words_for_home.jpg'),
-            author: 'Jasmine Warga',
-        },
-    ]);
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            if (!userLogin || !userLogin.uid) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const userDoc = await firestore()
+                    .collection('NguoiDung')
+                    .doc(userLogin.uid)
+                    .get();
+
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    setFavorites(userData.favorites || []);
+                }
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching favorites:', error);
+                setLoading(false);
+            }
+        };
+
+        fetchFavorites();
+    }, [userLogin]);
+
 
     const handleLogout = async () => {
         try {
@@ -52,7 +77,7 @@ const Setting = ({ navigation }) => {
             }
         >
             <Image
-                source={item.bookCover}
+                source={{ uri: item.bookCover }}
                 resizeMode='cover'
                 style={{ width: 100, height: 150, borderRadius: 10 }}
             />
@@ -83,13 +108,19 @@ const Setting = ({ navigation }) => {
                     Sách yêu thích
                 </Text>
                 {userLogin ? (
-                    <FlatList
-                        data={favorites}
-                        renderItem={renderItem}
-                        keyExtractor={(item) => `${item.id}`}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingVertical: SIZES.padding }}
-                    />
+                    favorites.length > 0 ? (
+                        <FlatList
+                            data={favorites}
+                            renderItem={renderItem}
+                            keyExtractor={(item) => `${item.id}`}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingVertical: SIZES.padding }}
+                        />
+                    ) : (
+                        <Text style={{ ...FONTS.body3, color: COLORS.white, marginTop: SIZES.padding }}>
+                            Bạn chưa có sách yêu thích.
+                        </Text>
+                    )
                 ) : (
                     <Text style={{ ...FONTS.body3, color: COLORS.white, marginTop: SIZES.padding }}>
                         Vui lòng đăng nhập để xem sách yêu thích.

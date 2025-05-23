@@ -77,8 +77,24 @@ export const MyContextControllerProvider = ({ children }) => {
             });
     };
 
+    const loadFavorites = async (uid) => {
+        if (!uid) return;
+
+        try {
+            const userDoc = await NguoiDung.doc(uid).get();
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                return userData.favorites || [];
+            }
+            return [];
+        } catch (error) {
+            console.error("Error loading favorites:", error);
+            return [];
+        }
+    };
+
     return (
-        <MyContext.Provider value={[controller, dispatch, { loadBooks, loadCategories }]}>
+        <MyContext.Provider value={[controller, dispatch, { loadBooks, loadCategories, loadFavorites }]}>
             {children}
         </MyContext.Provider>
     );

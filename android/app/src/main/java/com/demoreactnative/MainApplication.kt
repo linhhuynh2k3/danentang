@@ -13,6 +13,7 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 // Sửa import cho react-native-gesture-handler
 import com.swmansion.gesturehandler.RNGestureHandlerPackage // Đổi từ com.swmansion.gesturehandler.react sang com.swmansion.gesturehandler
+import com.reactnativecommunity.webview.RNCWebViewPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -23,6 +24,7 @@ class MainApplication : Application(), ReactApplication {
                     // Packages that cannot be autolinked yet can be added manually here, for example:
                     // add(MyReactNativePackage())
                     add(RNGestureHandlerPackage())
+                    add(RNCWebViewPackage())
                 }
 
             override fun getJSMainModuleName(): String = "index"

@@ -22,18 +22,79 @@ const LineDivider = () => {
 
 const BookDetail = ({ route, navigation }) => {
 
+    const [controller, dispatch] = useMyContextController();
+    const { userLogin } = controller;
     const [book, setBook] = React.useState(null);
-
+    const [isFavorite, setIsFavorite] = React.useState(false);
     const [scrollViewWholeHeight, setScrollViewWholeHeight] = React.useState(1);
     const [scrollViewVisibleHeight, setScrollViewVisibleHeight] = React.useState(0);
-
     const indicator = new Animated.Value(0);
 
     React.useEffect(() => {
         if (route.params?.book) {
             setBook(route.params.book);
+            checkIfFavorite(route.params.book);
         }
-    }, []);
+    }, [route.params?.book]);
+
+    const checkIfFavorite = async (book) => {
+        if (!userLogin || !userLogin.uid) return;
+
+        try {
+            const userDoc = await firestore().collection("NguoiDung").doc(userLogin.uid).get();
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                const favorites = userData.favorites || [];
+                const isFav = favorites.some(fav => fav.id === book.id);
+                setIsFavorite(isFav);
+            }
+        } catch (error) {
+            console.error("Error checking favorite:", error);
+        }
+    };
+
+    const toggleFavorite = async () => {
+        if (!userLogin || !userLogin.uid) {
+            Alert.alert("Thông báo", "Vui lòng đăng nhập để sử dụng tính năng này");
+            return;
+        }
+
+        try {
+            const userRef = firestore().collection("NguoiDung").doc(userLogin.uid);
+            const userDoc = await userRef.get();
+
+            let favorites = [];
+            if (userDoc.exists) {
+                favorites = userDoc.data().favorites || [];
+            }
+
+            if (isFavorite) {
+                // Remove from favorites
+                favorites = favorites.filter(fav => fav.id !== book.id);
+            } else {
+                // Add to favorites
+                favorites.push({
+                    id: book.id,
+                    bookName: book.bookName,
+                    author: book.author,
+                    bookCover: book.bookCover.uri || images.theTinyDragon,
+                    rating: book.rating,
+                    pageNo: book.pageNo,
+                    description: book.description
+                });
+            }
+
+            await userRef.set({
+                favorites: favorites
+            }, { merge: true });
+
+            setIsFavorite(!isFavorite);
+            Alert.alert("Thành công", isFavorite ? "Đã xóa khỏi danh sách yêu thích" : "Đã thêm vào danh sách yêu thích");
+        } catch (error) {
+            console.error("Error updating favorites:", error);
+            Alert.alert("Lỗi", "Không thể cập nhật danh sách yêu thích");
+        }
+    };
 
     function renderBookInfoSection() {
         return (
@@ -219,15 +280,15 @@ const BookDetail = ({ route, navigation }) => {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}
-                    onPress={() => console.log("Bookmark")}
+                    onPress={toggleFavorite}
                 >
                     <Image
-                        source={icons.bookmark_icon}
+                        source={isFavorite ? icons.bookmark_filled_icon : icons.bookmark_icon}
                         resizeMode="contain"
                         style={{
                             width: 25,
                             height: 25,
-                            tintColor: COLORS.lightGray2
+                            tintColor: isFavorite ? COLORS.primary : COLORS.lightGray2
                         }}
                     />
                 </TouchableOpacity>
@@ -243,7 +304,7 @@ const BookDetail = ({ route, navigation }) => {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}
-                    onPress={() => console.log("Start Reading")}
+                    onPress={() => navigation.navigate("BookReader", { book })}
                 >
                     <Text style={{ ...FONTS.h3, color: COLORS.white }}>Start Reading</Text>
                 </TouchableOpacity>

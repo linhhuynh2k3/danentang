@@ -9,6 +9,7 @@ import BookDetail from '../screens/BookDetail';
 import BookReader from '../screens/BookReader';
 import { MyContextControllerProvider } from '../store';
 import { Provider as PaperProvider } from 'react-native-paper';
+import '../firebaseConfig';
 
 const theme = {
     ...DefaultTheme,
